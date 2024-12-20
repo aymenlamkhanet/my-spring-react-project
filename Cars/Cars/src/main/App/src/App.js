@@ -18,6 +18,8 @@ import AddCarForm from "./AddCarForm";
 import PaymentsPage from "./PaymentsPage";
 import AdminProfilePage from "./AdminProfilePage";
 import PaymentInfoPage from "./PaymentInfoPage";
+import SalesPage from "./SalesPage";
+import NotificationsPage from "./NotificationsPage";
 
 
 function App() {
@@ -39,7 +41,9 @@ function App() {
         <Route path="/clients" element={<ClientsPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/carpage" element={<CarPage />} />
-        <Route path="/car" element={<CarDetails />} />
+        <Route path="/car1/:id" element={<CarDetails />} />
+        <Route path="/Sales" element={<SalesPage />} />
+        <Route path="/Notif" element={<NotificationsPage />} />
         <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </Router>

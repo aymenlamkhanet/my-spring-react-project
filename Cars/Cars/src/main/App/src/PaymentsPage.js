@@ -58,12 +58,12 @@ const PaymentsPage = () => {
 
   // Filter payments by reservation ID
   const filteredPayments = sortedPayments.filter((payment) => {
+    const reservationId = payment.reservation.id || "";
     return reservationIdFilter
-      ? payment.reservationId
-          .toString()
-          .includes(reservationIdFilter.toString())
+      ? reservationId.toString().includes(reservationIdFilter.toString())
       : true;
   });
+
 
   // Display loading message while fetching data
   if (loading) {

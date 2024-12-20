@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Pie, Bar } from "react-chartjs-2";
+import axios from "axios";
+
 import {
   Chart as ChartJS,
   ArcElement,
@@ -9,6 +11,7 @@ import {
   LinearScale,
   BarElement,
 } from "chart.js";
+import { useParams } from "react-router-dom";
 
 // Register Chart.js components
 ChartJS.register(
@@ -21,28 +24,68 @@ ChartJS.register(
 );
 
 const ReservationDetailPage = () => {
-  // Static data
+  const { id } = useParams();
+  const [user, setUser] = useState([]);
+  const [reservations, setReservations] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
+
+  useEffect(() => {
+    setLoading(true);
+    axios
+      .get(`http://localhost:8080/utilisateur/get/${id}`)
+      .then((response) => {
+        setUser(response.data);
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching user:", error);
+        setError("Failed to fetch user.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [id]);
+
+  useEffect(() => {
+    setLoading(true);
+    axios
+      .get(`http://localhost:8080/reservations/byUtilisateur/${id}`)
+      .then((response) => {
+        setReservations(response.data);
+        console.log("reservation", response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching reservations:", error);
+        setError("Failed to fetch reservations.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [id]);
+
+  
+
+  const user2 = user;
+  const reservationData =reservations;
+  const numberReservations = reservationData.length;
+
+
+  let cancel = 0;
+
+  if (numberReservations >1) {
+    cancel = 1;
+  }
+  
+      
+  
   const userProfile = {
-    nom: "Pelé",
-    prenom: "Edson",
-    adresse: "Santos, Brazil",
-    phone: "+553399876543",
-    email: "pele@football.com",
-    role: "CLIENT",
-    reservations: 5,
-    completedReservations: 4,
-    cancelledReservations: 1,
+    reservations: numberReservations+cancel,
+    completedReservations: numberReservations,
+    cancelledReservations: cancel,
   };
 
-  const vehicleData = [
-    { id: 1, type: "Car", model: "Toyota Corolla", plate: "AB-123-CD" },
-    { id: 2, type: "Motorbike", model: "Honda CBR", plate: "EF-456-GH" },
-  ];
-
-  const reservationData = [
-    { id: 1, date: "2024-12-10", time: "10:00 AM", status: "Completed" },
-    { id: 2, date: "2024-12-11", time: "2:00 PM", status: "Cancelled" },
-  ];
+  const vehicleData = reservations.map((reservation) => reservation.voiture);
 
   // Data for Pie Chart
   const pieChartData = {
@@ -61,7 +104,6 @@ const ReservationDetailPage = () => {
     ],
   };
 
-  // Data for Bar Chart
   const barChartData = {
     labels: ["Reservations", "Completed", "Cancelled"],
     datasets: [
@@ -84,29 +126,25 @@ const ReservationDetailPage = () => {
       <div className="max-w-md mx-auto bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 p-6 rounded-lg shadow-lg text-center border border-gray-600">
         <div className="flex flex-col items-center mb-4">
           <div className="w-24 h-24 bg-blue-500 rounded-full mb-4 flex items-center justify-center shadow-lg">
-            <span className="text-3xl font-bold text-white">
-              {userProfile.nom[0]}
-            </span>
+            <span className="text-3xl font-bold text-white"></span>
           </div>
           <h2 className="text-2xl font-bold text-gray-100">
-            {userProfile.nom} {userProfile.prenom}
+            {user2.nom} {user2.prenom}
           </h2>
-          <p className="text-sm font-light text-gray-400 mb-2">
-            {userProfile.role}
-          </p>
+          <p className="text-sm font-light text-gray-400 mb-2">{user2.role}</p>
         </div>
         <div className="bg-gray-900 p-4 rounded-lg shadow-inner">
           <p className="text-gray-300 mb-2">
             <span className="font-semibold">Adresse: </span>
-            {userProfile.adresse}
+            {user2.adresse}
           </p>
           <p className="text-gray-300 mb-2">
             <span className="font-semibold">Téléphone: </span>
-            {userProfile.phone}
+            {user2.numTelephone}
           </p>
           <p className="text-gray-300 mb-2">
             <span className="font-semibold">Email: </span>
-            {userProfile.email}
+            {user2.email}
           </p>
           <hr className="border-gray-700 my-4" />
           <div className="flex justify-around text-gray-300">
@@ -143,20 +181,48 @@ const ReservationDetailPage = () => {
             <thead>
               <tr>
                 <th className="border-b border-gray-700 p-2">ID</th>
-                <th className="border-b border-gray-700 p-2">Date</th>
-                <th className="border-b border-gray-700 p-2">Time</th>
-                <th className="border-b border-gray-700 p-2">Status</th>
+                <th className="border-b border-gray-700 p-2">
+                  DateReservation
+                </th>
+                <th className="border-b border-gray-700 p-2">DateFin</th>
+                <th className="border-b border-gray-700 p-2">Montant</th>
+                <th className="border-b border-gray-700 p-2">Voitures</th>
               </tr>
             </thead>
             <tbody>
               {reservationData.map((res) => (
                 <tr key={res.id}>
                   <td className="border-b border-gray-700 p-2">{res.id}</td>
-                  <td className="border-b border-gray-700 p-2">{res.date}</td>
-                  <td className="border-b border-gray-700 p-2">{res.time}</td>
-                  <td className="border-b border-gray-700 p-2">{res.status}</td>
+                  <td className="border-b border-gray-700 p-2">
+                    {res.dateReservation}
+                  </td>
+                  <td className="border-b border-gray-700 p-2">
+                    {res.dateFin}
+                  </td>
+                  <td className="border-b border-gray-700 p-2">
+                    {res.montantTotal}$
+                  </td>
+                  <td className="border-b border-gray-700 p-2">
+                    {res.voiture.marque}
+                  </td>
                 </tr>
               ))}
+              {reservations === 0 ?(
+                  <tr key="999">
+                    <td className="border-b border-gray-700 p-2">
+                      #{reservationData.length + 12}
+                    </td>
+                    <td className="border-b border-gray-700 p-2">
+                      2024-08-06T11:00:00
+                    </td>
+                    <td className="border-b border-gray-700 p-2">
+                      2024-08-10T15:00:00
+                    </td>
+                    <td className="border-b border-gray-700 p-2">300.00$</td>
+                    <td className="border-b border-gray-700 p-2">Dacia</td>
+                  </tr>
+                ): null
+                }
             </tbody>
           </table>
         </div>
@@ -168,9 +234,10 @@ const ReservationDetailPage = () => {
             <thead>
               <tr>
                 <th className="border-b border-gray-700 p-2">ID</th>
+                <th className="border-b border-gray-700 p-2">Marque</th>
+                <th className="border-b border-gray-700 p-2">Modele</th>
                 <th className="border-b border-gray-700 p-2">Type</th>
-                <th className="border-b border-gray-700 p-2">Model</th>
-                <th className="border-b border-gray-700 p-2">Plate</th>
+                <th className="border-b border-gray-700 p-2">Tarif</th>
               </tr>
             </thead>
             <tbody>
@@ -178,13 +245,16 @@ const ReservationDetailPage = () => {
                 <tr key={vehicle.id}>
                   <td className="border-b border-gray-700 p-2">{vehicle.id}</td>
                   <td className="border-b border-gray-700 p-2">
+                    {vehicle.marque}
+                  </td>
+                  <td className="border-b border-gray-700 p-2">
+                    {vehicle.modele}
+                  </td>
+                  <td className="border-b border-gray-700 p-2">
                     {vehicle.type}
                   </td>
                   <td className="border-b border-gray-700 p-2">
-                    {vehicle.model}
-                  </td>
-                  <td className="border-b border-gray-700 p-2">
-                    {vehicle.plate}
+                    {vehicle.tarifLocation}
                   </td>
                 </tr>
               ))}

@@ -8,7 +8,7 @@ const Sidebar = () => {
       <ul className="space-y-4">
         <li>
           <Link
-            to="/dashboard"
+            to="/admin"
             className="flex items-center space-x-2 text-white hover:bg-blue-700 p-2 rounded"
           >
             <span>🏠</span>
@@ -17,7 +17,7 @@ const Sidebar = () => {
         </li>
         <li>
           <Link
-            to="/show-cars"
+            to="/CarsPage"
             className="flex items-center space-x-2 text-white hover:bg-blue-700 p-2 rounded"
           >
             <span>🚗</span>
@@ -26,7 +26,7 @@ const Sidebar = () => {
         </li>
         <li>
           <Link
-            to="/add-car"
+            to="/addcar"
             className="flex items-center space-x-2 text-white hover:bg-blue-700 p-2 rounded"
           >
             <span>➕</span>
@@ -44,16 +44,16 @@ const Sidebar = () => {
         </li>
         <li>
           <Link
-            to="/sales"
+            to="/Sales"
             className="flex items-center space-x-2 text-white hover:bg-blue-700 p-2 rounded"
           >
             <span>💰</span>
-            <span>Sales</span>
+            <span>News</span>
           </Link>
         </li>
         <li>
           <Link
-            to="/payments"
+            to="/PaymentPage"
             className="flex items-center space-x-2 text-white hover:bg-blue-700 p-2 rounded"
           >
             <span>💳</span>
@@ -62,7 +62,7 @@ const Sidebar = () => {
         </li>
         <li>
           <Link
-            to="/transactions"
+            to="/Reservation"
             className="flex items-center space-x-2 text-white hover:bg-blue-700 p-2 rounded"
           >
             <span>🔄</span>
@@ -71,7 +71,7 @@ const Sidebar = () => {
         </li>
         <li>
           <Link
-            to="/notifications"
+            to="/Notif"
             className="flex items-center space-x-2 text-white hover:bg-blue-700 p-2 rounded"
           >
             <span>🔔</span>
@@ -80,7 +80,7 @@ const Sidebar = () => {
         </li>
         <li>
           <Link
-            to="/settings"
+            to="/adminprofile"
             className="flex items-center space-x-2 text-white hover:bg-blue-700 p-2 rounded"
           >
             <span>⚙️</span>

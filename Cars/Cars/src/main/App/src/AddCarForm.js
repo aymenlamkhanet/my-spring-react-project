@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Upload, AlertCircle, Car, Save, X, Check } from "lucide-react";
+import { Upload, AlertCircle, Car, Save, Check } from "lucide-react";
 import Sidebar from "./Sidebar";
 
 const AddCarForm = () => {
@@ -13,7 +13,7 @@ const AddCarForm = () => {
     kilometrage: "",
     couleur: "",
     immatriculation: "",
-    imageUrl: null,
+    image: null,
   });
 
   const [imagePreview, setImagePreview] = useState(null);
@@ -35,13 +35,15 @@ const AddCarForm = () => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        image: "/images/"+file.name,
+      }));
+      console.log(FormData.image);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-        setFormData((prev) => ({
-          ...prev,
-          imageUrl: reader.result,
-        }));
+        
       };
       reader.readAsDataURL(file);
     }
@@ -65,9 +67,7 @@ const AddCarForm = () => {
         showToast(
           "error",
           "Formulaire Incomplet",
-          `Veuillez remplir le champ ${
-            field.charAt(0).toUpperCase() + field.slice(1)
-          }`
+          `Veuillez remplir le champ ${field.charAt(0).toUpperCase() + field.slice(1)}`
         );
         return false;
       }
@@ -76,37 +76,71 @@ const AddCarForm = () => {
     return true;
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!validateForm()) return;
 
-    try {
-      console.log("Car Data Submitted:", formData);
-      showToast(
-        "success",
-        "Voiture Ajoutée",
-        `${formData.marque} ${formData.modele} a été ajouté à votre parc.`
-      );
+    // Prepare form data as a JSON object
+    const formDataToSubmit = {
+      marque: formData.marque,
+      modele: formData.modele,
+      annee: formData.annee,
+      type: formData.type,
+      tarifLocation: formData.tarifLocation,
+      statut: formData.statut,
+      kilometrage: formData.kilometrage,
+      couleur: formData.couleur,
+      immatriculation: formData.immatriculation,
+      image: formData.image, // Assuming you are storing the image URL, not the file
+    };
 
-      // Reset form after successful submission
-      setFormData({
-        marque: "",
-        modele: "",
-        annee: "",
-        type: "",
-        tarifLocation: "",
-        statut: "",
-        kilometrage: "",
-        couleur: "",
-        immatriculation: "",
-        imageUrl: null,
+    console.log("JSON to send to Spring", formDataToSubmit);
+
+    try {
+      const response = await fetch("http://localhost:8080/voitures/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // Send JSON data
+        },
+        body: JSON.stringify(formDataToSubmit), // Convert object to JSON string
       });
-      setImagePreview(null);
+
+      if (response.ok) {
+        const data = await response.json();
+        showToast(
+          "success",
+          "Voiture Ajoutée",
+          `${formData.marque} ${formData.modele} a été ajoutée à votre parc.`
+        );
+        // Reset the form
+        setFormData({
+          marque: "",
+          modele: "",
+          annee: "",
+          type: "",
+          tarifLocation: "",
+          statut: "",
+          kilometrage: "",
+          couleur: "",
+          immatriculation: "",
+          image: "",
+        });
+        setImagePreview(null);
+      } else {
+        const errorData = await response.json();
+        showToast(
+          "error",
+          "Erreur",
+          errorData.message || "Une erreur est survenue"
+        );
+      }
     } catch (error) {
+      console.error("Error submitting form:", error);
       showToast("error", "Erreur", "Impossible d'ajouter la voiture");
     }
   };
+
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -115,14 +149,11 @@ const AddCarForm = () => {
         {/* Toast Notification */}
         {toast && (
           <div
-            className={`
-            fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg 
-            ${
+            className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg ${
               toast.type === "success"
                 ? "bg-green-500 text-white"
                 : "bg-red-500 text-white"
-            }
-          `}
+            }`}
           >
             <div className="flex items-center space-x-2">
               {toast.type === "success" ? (
@@ -297,6 +328,23 @@ const AddCarForm = () => {
                     className="w-full p-3 border rounded-lg"
                   />
                 </div>
+                <div>
+                  <label
+                    htmlFor="couleur"
+                    className="block mb-2 text-sm font-medium"
+                  >
+                    immatriculation
+                  </label>
+                  <input
+                    type="text"
+                    id="immatriculationr"
+                    name="immatriculation"
+                    value={formData.immatriculation}
+                    onChange={handleInputChange}
+                    placeholder="Ex: 2345-XX-56"
+                    className="w-full p-3 border rounded-lg"
+                  />
+                </div>
               </div>
             </div>
 
@@ -312,50 +360,38 @@ const AddCarForm = () => {
                 <div className="flex items-center justify-center w-full">
                   <label
                     htmlFor="carImage"
-                    className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+                    className="flex flex-col items-center justify-center space-y-2 bg-gray-100 border-2 border-dashed rounded-lg cursor-pointer"
                   >
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      {imagePreview ? (
-                        <img
-                          src={imagePreview}
-                          alt="Car Preview"
-                          className="h-48 w-auto object-cover rounded-lg"
-                        />
-                      ) : (
-                        <>
-                          <Upload className="w-10 h-10 text-gray-500 mb-3" />
-                          <p className="mb-2 text-sm text-gray-500">
-                            <span className="font-semibold">
-                              Cliquer pour télécharger
-                            </span>{" "}
-                            ou glisser-déposer
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            PNG, JPG (MAX. 5MB)
-                          </p>
-                        </>
-                      )}
-                    </div>
-                    <input
-                      id="carImage"
-                      type="file"
-                      className="hidden"
-                      accept="image/png, image/jpeg"
-                      onChange={handleImageUpload}
-                    />
+                    <Upload className="text-gray-600 mb-2" size={40} />
+                    <span className="text-gray-600">Choisir une image</span>
                   </label>
+                  <input
+                    type="file"
+                    id="carImage"
+                    name="image"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
                 </div>
+                {imagePreview && (
+                  <img
+                    src={imagePreview}
+                    alt="Aperçu de l'image"
+                    className="mt-4 w-full max-w-xs mx-auto"
+                  />
+                )}
               </div>
             </div>
 
             {/* Submit Button */}
-            <div className="text-center mt-8">
+            <div className="mt-6 flex justify-center">
               <button
                 type="submit"
-                className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 flex items-center justify-center mx-auto space-x-2"
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow-lg flex items-center space-x-2"
               >
                 <Save size={20} />
-                <span>Ajouter la Voiture</span>
+                <span>Enregistrer la Voiture</span>
               </button>
             </div>
           </form>

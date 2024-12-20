@@ -1,8 +1,18 @@
+import { useNavigate } from "react-router-dom";
+
 function CarShowcase() {
+  const navigate = useNavigate();
+
+  const handleNavigation = (e) => {
+    // Get the path from the data attribute
+    const path = e.target.getAttribute("data-path");
+    if (path) {
+      navigate(path);
+    }
+  };
+
   return (
     <div className="relative text-violet-700 p-12">
-      
-
       {/* Content Section */}
       <div className="relative z-10 max-w-screen-lg mx-auto text-center">
         <h2 className="text-4xl sm:text-5xl font-bold mb-6">
@@ -67,6 +77,8 @@ function CarShowcase() {
         <div className="mt-12 text-center">
           <a
             href="#contact"
+            data-path="/carpage"
+            onClick={handleNavigation}
             className="bg-gradient-to-r from-pink-600 to-violet-700 px-8 py-4 text-white rounded-full font-semibold hover:bg-gradient-to-l hover:from-pink-500 hover:to-violet-600 transition-all"
           >
             Get Yours Today

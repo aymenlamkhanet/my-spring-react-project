@@ -1,15 +1,60 @@
-import React, { useState } from "react";
-import carImage from "./audi.png"; // Use the correct image path
+import React, { useState ,useEffect } from "react";
+import carImage from "./audi.png"; 
+import { useParams } from "react-router-dom";
+import axios from "axios";
 
 const CarInfoPage = () => {
+  const {id} = useParams();
   const [isHovered, setIsHovered] = useState(false);
-  const [isForSale, setIsForSale] = useState(false); // New state for sale status
-  const [salePrice, setSalePrice] = useState(60000); // New state for sale price
+  const [isForSale, setIsForSale] = useState(false); 
+  const [salePrice, setSalePrice] = useState(60000);
+  const [resrv,setReserv] =useState([]); 
+  const [voiture,setVoiture] = useState([]);
+  const [loading, setLoading] = useState(true); 
+  const [error, setError] = useState(null); 
 
-  // Reservation statistics
-  const totalReservations = 3; // Total number of reservations
-  const confirmedReservations = 1; // Number of confirmed reservations
+
+  useEffect(() => {
+    setLoading(true);
+    axios
+      .get(`http://localhost:8080/voitures/${id}`)
+      .then((response) => {
+        setVoiture(response.data);
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching user:", error);
+        setError("Failed to fetch user.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [id]);
+
+  useEffect(() => {
+    setLoading(true);
+    axios
+      .get(`http://localhost:8080/reservations/byVoiture/${id}`)
+      .then((response) => {
+        setReserv(response.data);
+        console.log("reservation", response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching reservations:", error);
+        setError("Failed to fetch reservations.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [id]);
+
+
+  
+  const totalReservations = resrv.length+1; 
+  const confirmedReservations = totalReservations-1; 
   const progressPercentage = (confirmedReservations / totalReservations) * 100;
+
+
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
@@ -17,9 +62,11 @@ const CarInfoPage = () => {
         {/* Left Section: Car Image */}
         <div className="flex justify-center items-center">
           <img
-            src={carImage} // Use your actual car image path
+            src={`http://localhost:8080${voiture.image}`}
+            height="300px"
+            width="400px"
             alt="Car"
-            className="w-80 h-80 object-cover rounded-lg"
+            
           />
         </div>
 
@@ -41,31 +88,31 @@ const CarInfoPage = () => {
                 <p>
                   <strong>Brand:</strong>
                 </p>
-                <p className="ml-4">Mustang</p>
+                <p className="ml-4">{voiture.marque}</p>
               </div>
               <div className="flex justify-between mb-2">
                 <p>
                   <strong>Model:</strong>
                 </p>
-                <p className="ml-4">GT 500</p>
+                <p className="ml-4">{voiture.modele}</p>
               </div>
               <div className="flex justify-between mb-2">
                 <p>
                   <strong>Year:</strong>
                 </p>
-                <p className="ml-4">2024</p>
+                <p className="ml-4">{voiture.annee}</p>
               </div>
               <div className="flex justify-between mb-2">
                 <p>
                   <strong>Price:</strong>
                 </p>
-                <p className="ml-4">$55,000</p>
+                <p className="ml-4">{voiture.tarifLocation}$</p>
               </div>
               <div className="flex justify-between mb-2">
                 <p>
                   <strong>Color:</strong>
                 </p>
-                <p className="ml-4">Red</p>
+                <p className="ml-4">{voiture.couleur}</p>
               </div>
             </div>
           </div>
@@ -89,11 +136,11 @@ const CarInfoPage = () => {
               <p>
                 <strong>Engine:</strong>
               </p>
-              <p className="ml-4">5.2L V8</p>
+              <p className="ml-4">{voiture.type}</p>
             </div>
             <div className="flex justify-between mb-2">
               <p>
-                <strong>Fuel Type:</strong>
+                <strong>Type:</strong>
               </p>
               <p className="ml-4">Gasoline</p>
             </div>
@@ -101,7 +148,7 @@ const CarInfoPage = () => {
               <p>
                 <strong>Mileage:</strong>
               </p>
-              <p className="ml-4">15,000 miles</p>
+              <p className="ml-4">{voiture.kilometrage}</p>
             </div>
             <div className="flex justify-between mb-2">
               <p>
@@ -117,9 +164,9 @@ const CarInfoPage = () => {
             </div>
             <div className="flex justify-between mb-2">
               <p>
-                <strong>Fuel Efficiency:</strong>
+                <strong>Immatriculation</strong>
               </p>
-              <p className="ml-4">18 MPG</p>
+              <p className="ml-4">{voiture.immatriculation}</p>
             </div>
           </div>
 
@@ -162,24 +209,32 @@ const CarInfoPage = () => {
           <thead>
             <tr>
               <th className="py-2 px-4 text-left">Reservation ID</th>
-              <th className="py-2 px-4 text-left">Customer Name</th>
-              <th className="py-2 px-4 text-left">Date</th>
-              <th className="py-2 px-4 text-left">Status</th>
+              <th className="py-2 px-4 text-left">dateReservation</th>
+              <th className="py-2 px-4 text-left">DateFin</th>
+              <th className="py-2 px-4 text-left">montantTotal</th>
+              <th className="py-2 px-4 text-left">Client</th>
+              <th className="py-2 px-4 text-left">Statut</th>
             </tr>
           </thead>
           <tbody>
             {/* Example reservation rows */}
+            {resrv.map((res) => (
+              <tr key={res.id}>
+                <td className="py-2 px-4">#{res.id}</td>
+                <td className="py-2 px-4">{res.dateReservation}</td>
+                <td className="py-2 px-4">{res.dateFin}</td>
+                <td className="py-2 px-4">{res.montantTotal}$</td>
+                <td className="py-2 px-4">{res.utilisateur.nom}</td>
+                <td className="py-2 px-4 text-green-500">Completed</td>
+              </tr>
+            ))}
             <tr>
-              <td className="py-2 px-4">#001</td>
-              <td className="py-2 px-4">John Doe</td>
-              <td className="py-2 px-4">12/10/2024</td>
-              <td className="py-2 px-4 text-green-500">Confirmed</td>
-            </tr>
-            <tr>
-              <td className="py-2 px-4">#002</td>
-              <td className="py-2 px-4">Jane Smith</td>
-              <td className="py-2 px-4">12/12/2024</td>
-              <td className="py-2 px-4 text-red-500">Pending</td>
+              <td className="py-2 px-4">#{resrv.length + 1}</td>
+              <td className="py-2 px-4">2024-08-06T11:00:00</td>
+              <td className="py-2 px-4">2024-08-10T15:00:00</td>
+              <td className="py-2 px-4 ">296.99$</td>
+              <td className="py-2 px-4">Smith</td>
+              <td className="py-2 px-4 text-red-500">Canceled</td>
             </tr>
           </tbody>
         </table>

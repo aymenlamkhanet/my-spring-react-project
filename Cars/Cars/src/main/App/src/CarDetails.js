@@ -1,48 +1,127 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 import Footer from "./Footer";
 
 const CarDetailsPage = () => {
   const [activeTab, setActiveTab] = useState("description");
+  const [voiture, setVoiture] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); 
+  const { id } = useParams();
+
+  useEffect(() => {
+    setLoading(true);
+    axios
+      .get(`http://localhost:8080/voitures/${id}`)
+      .then((response) => {
+        console.log(response.data);
+        setVoiture(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching Car ", error);
+        setError("Failed fetching Car with the id ");
+        setLoading(false);
+      });
+  });
+
+  const transformCarData = {
+    id: voiture.id,
+    name: `${voiture.marque} ${voiture.modele}`,
+    type: voiture.type === "Electrique" ? "Electric" : voiture.type,
+    price: `$${(voiture.tarifLocation * 1000).toFixed(0)}`, // Convert daily rate to approximate voiture price
+    discountPrice: `$${(
+      voiture.tarifLocation * 1000 -
+      300 * voiture.tarifLocation
+    ).toFixed(0)}`, // No discount in original data
+    statut: voiture.statut,
+    isDiscounted: true,
+    year: parseInt(voiture.annee),
+    fuel: voiture.type === "Electrique" ? "Electric" : "Gasoline",
+    rating: voiture.statut === "Disponible" ? 4 : 3,
+    image: voiture.image,
+  };
 
   // Example car details embedded directly
   const car = {
-    id: 1,
-    name: "Toyota Camry",
-    type: "Sedan",
-    price: "$20,000",
-    discountPrice: "$18,000",
-    isDiscounted: true,
-    year: 2019,
-    fuel: "Gasoline",
-    rating: 4,
-    image: "https://via.placeholder.com/300x200",
-    description:
-      "The Toyota Camry is a high-quality and versatile sedan designed for those seeking a balance between performance, comfort, and fuel efficiency. With its sleek design, advanced technology, and premium materials, the Camry is well-suited for everyday commuting and long road trips. It boasts a smooth driving experience with its well-tuned suspension and a responsive engine, making it a top choice for anyone in the market for a reliable sedan. Additionally, the Camry features a spacious interior with intuitive controls, making it both a practical and enjoyable car to drive for families or individuals alike.",
-    colorGuide:
-      "The Toyota Camry is available in a range of attractive colors, including classic black, pristine white, vibrant red, calming blue, elegant silver, and a sophisticated grey. Each color is carefully selected to complement the sleek design of the vehicle, allowing you to choose the one that best matches your personal style. Whether you prefer a bold statement or a more understated look, there’s a Camry color that will fit your taste perfectly.",
+    description: `
+    The ${voiture.marque} ${
+      voiture.modele
+    } is a masterpiece of modern engineering, blending 
+    exceptional performance with advanced technology. As a versatile ${
+      voiture.type
+    } car, it caters 
+    to a wide range of drivers, from those seeking thrilling speed to families looking for comfort 
+    and safety on the road. With its cutting-edge features, including ${
+      voiture.features || "adaptive cruise control and a panoramic sunroof"
+    }, 
+    and a sleek aerodynamic design, this vehicle ensures you arrive at your destination in style and comfort.
+
+    Built with premium materials, the ${voiture.marque} ${
+      voiture.modele
+    } offers a spacious interior 
+    and a user-friendly dashboard equipped with the latest infotainment systems. ${
+      voiture.type === "Electrique"
+        ? "Its eco-friendly electric motor provides zero-emissions driving, making it perfect for urban environments and long trips alike."
+        : "The fuel-efficient engine ensures minimal running costs without compromising on performance."
+    }
+    Whether you're cruising through city streets or exploring scenic routes, the ${
+      voiture.marque
+    } ${voiture.modele} promises an unforgettable journey.
+  `,
+    colorGuide: `
+    The ${voiture.marque} ${voiture.modele} comes in a variety of stunning color options tailored to match your personality and preferences:
+    
+    - **Classic Black**: For a timeless and professional look.
+    - **Pristine White**: Reflecting elegance and simplicity.
+    - **Vibrant Red**: For those who love to make a bold statement.
+    - **Elegant Silver**: Combining sophistication with a modern touch.
+    
+    Each color option is carefully crafted to enhance the vehicle's dynamic design and premium finish, ensuring you turn heads wherever you go!
+  `,
+  additionalInfo: `The ${voiture.marque} ${voiture.modele} features state-of-the-art technology, including an intuitive touchscreen dashboard, advanced safety features, and a premium sound system. It's designed to offer a seamless driving experience, whether you're navigating city streets or exploring the open road.`,
+
     faq: [
       {
         question: "Is this car available for a test drive?",
-        answer:
-          "Yes, the Toyota Camry is available for a test drive at your local dealership. We encourage you to experience the car's smooth handling, premium interior, and advanced safety features firsthand. Contact your nearest Toyota dealer for more details and to schedule your test drive.",
+        answer: `Absolutely! You can schedule a test drive for the ${voiture.marque} ${voiture.modele} at your convenience. Our team will guide you through its features and ensure you experience its unmatched performance firsthand.`,
       },
       {
         question: "Does it come with a warranty?",
-        answer:
-          "Yes, the Toyota Camry comes with a comprehensive 5-year/60,000-mile warranty, covering most major components and offering you peace of mind. Additionally, Toyota offers an extended warranty package for those who wish to extend coverage beyond the standard warranty period, ensuring that you’re protected for years to come.",
+        answer: `Yes, the ${voiture.marque} ${voiture.modele} is covered by a comprehensive 5-year or 60,000-mile warranty, offering peace of mind and reliable support.`,
       },
       {
         question: "What is the estimated fuel economy?",
-        answer:
-          "The Toyota Camry delivers excellent fuel efficiency, with an estimated fuel economy of 28 MPG in the city and 39 MPG on the highway. This makes it an economical choice for long commutes and long-distance driving, reducing the number of trips to the fuel station while still providing an enjoyable and powerful driving experience.",
+        answer: `${
+          voiture.type === "Electrique"
+            ? "This electric vehicle offers a range of up to 300 miles on a single charge, depending on driving conditions."
+            : "With a fuel economy of 40 miles per gallon, this car is ideal for long commutes and city driving alike."
+        }`,
       },
       {
-        question: "Does it support Android Auto and Apple CarPlay?",
-        answer:
-          "Yes, the Toyota Camry comes equipped with both Android Auto and Apple CarPlay. This allows you to seamlessly connect your smartphone to the car's infotainment system, enabling easy access to your favorite apps, music, and navigation. Both systems are integrated into the car’s touchscreen interface, making it easier to stay connected while keeping your hands on the wheel and eyes on the road.",
+        question: "What safety features does it include?",
+        answer: `The ${voiture.marque} ${voiture.modele} is equipped with advanced safety features, including collision avoidance systems, blind-spot monitoring, lane-keeping assist, and airbags throughout the cabin.`,
+      },
+      {
+        question: "Is financing available?",
+        answer: `Yes, we offer flexible financing options for the ${voiture.marque} ${voiture.modele}, making it easier for you to drive home your dream car. Contact us for more details.`,
+      },
+      {
+        question: "How long does it take to charge?",
+        answer: `${
+          voiture.type === "Electrique"
+            ? "With a fast charger, the ${voiture.marque} ${voiture.modele} can be charged up to 80% in just 30 minutes. Standard charging takes approximately 7-8 hours."
+            : "This question applies to electric models only."
+        }`,
+      },
+      {
+        question: "Can I customize my car?",
+        answer: `Yes, the ${voiture.marque} ${voiture.modele} can be customized with various add-ons, including premium sound systems, custom wheels, and upgraded upholstery options.`,
       },
     ],
   };
+
 
   const tabs = [
     { id: "description", label: "Description" },
@@ -50,6 +129,8 @@ const CarDetailsPage = () => {
     { id: "colorGuide", label: "Color Guide" },
     { id: "faq", label: "FAQ" },
   ];
+
+  
 
   const handleTabClick = (tab) => setActiveTab(tab);
 
@@ -59,24 +140,28 @@ const CarDetailsPage = () => {
         {/* Left Image Section */}
         <div className="w-full lg:w-1/2">
           <img
-            src={car.image}
-            alt={car.name}
-            className="object-cover w-full h-full"
+            src={`http://localhost:8080${voiture.image}`}
+            alt={voiture.name}
+            height="900px"
+            width="900px"
+            className="object-cover"
           />
         </div>
 
         {/* Right Details Section */}
         <div className="w-full lg:w-1/2 p-8">
-          <h1 className="text-3xl font-bold text-gray-800">{car.name}</h1>
+          <h1 className="text-3xl font-bold text-gray-800">
+            {transformCarData.name}
+          </h1>
 
           {/* Rating */}
           <div className="flex items-center mt-4">
-            {Array.from({ length: car.rating }, (_, index) => (
+            {Array.from({ length: transformCarData.rating }, (_, index) => (
               <span key={index} className="text-yellow-500 text-xl">
                 ★
               </span>
             ))}
-            {Array.from({ length: 5 - car.rating }, (_, index) => (
+            {Array.from({ length: 5 - transformCarData.rating }, (_, index) => (
               <span key={index} className="text-gray-300 text-xl">
                 ★
               </span>
@@ -87,20 +172,22 @@ const CarDetailsPage = () => {
           <div className="mt-4">
             {car.isDiscounted ? (
               <div>
-                <span className="text-gray-500 line-through">{car.price}</span>{" "}
+                <span className="text-gray-500 line-through">
+                  {transformCarData.price}
+                </span>{" "}
                 <span className="text-green-500 font-bold">
-                  {car.discountPrice}
+                  {transformCarData.discountPrice}
                 </span>
               </div>
             ) : (
               <span className="text-gray-800 font-bold text-xl">
-                {car.price}
+                {transformCarData.price}
               </span>
             )}
           </div>
 
           {/* Medium Description */}
-          <p className="mt-6 text-gray-600">{car.description}</p>
+          <p className="mt-6 text-gray-600">{transformCarData.description}</p>
 
           {/* Key Features */}
           <div className="mt-6">
@@ -153,33 +240,44 @@ const CarDetailsPage = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="p-6">
+        <div className="p-6 space-y-8">
+          {" "}
+          {/* Add space between sections */}
           {activeTab === "description" && (
-            <p className="text-gray-700">{car.description}</p>
+            <p className="text-gray-700 p-4 bg-gray-100 rounded-lg">
+              {car.description}
+            </p>
           )}
           {activeTab === "info" && (
-            <ul className="text-gray-700 space-y-2">
-              <li>
-                <strong>Year:</strong> {car.year}
-              </li>
-              <li>
-                <strong>Fuel:</strong> {car.fuel}
-              </li>
-              <li>
-                <strong>Type:</strong> {car.type}
-              </li>
-            </ul>
+            <div className="text-gray-700 space-y-2 p-4 bg-gray-100 rounded-lg">
+              <ul>
+                <li>
+                  <strong>Year:</strong> {transformCarData.year}
+                </li>
+                <li>
+                  <strong>Fuel:</strong> {transformCarData.fuel}
+                </li>
+                <li>
+                  <strong>Type:</strong> {transformCarData.type}
+                </li>
+              </ul>
+              <p className="mt-4">{car.additionalInfo}</p>{" "}
+              {/* Display additional info */}
+            </div>
           )}
           {activeTab === "colorGuide" && (
-            <p className="text-gray-700">{car.colorGuide}</p>
+            <p className="text-gray-700 p-4 bg-gray-100 rounded-lg">
+              {car.colorGuide}
+            </p>
           )}
           {activeTab === "faq" && (
-            <ul className="text-gray-700 space-y-2">
+            <ul className="text-gray-700 space-y-4 p-4 bg-gray-100 rounded-lg">
               {car.faq.map((faq, index) => (
-                <li key={index}>
-                  <strong>Q:</strong> {faq.question}
-                  <br />
-                  <strong>A:</strong> {faq.answer}
+                <li key={index} className="p-3 bg-white rounded shadow">
+                  <strong className="block text-gray-900">
+                    Q: {faq.question}
+                  </strong>
+                  <span className="block text-gray-700">A: {faq.answer}</span>
                 </li>
               ))}
             </ul>

@@ -4,6 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const ClientsPage = () => {
+  
   const [clients, setClients] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [selectedColumn, setSelectedColumn] = useState("nom");
@@ -18,7 +19,7 @@ const ClientsPage = () => {
     axios
       .get("http://localhost:8080/utilisateur/clients")
       .then((response) => {
-        setClients(response.data);
+        setClients(response.data)
         console.log(response.data);
         setLoading(false); // Data fetched, stop loading
       })
@@ -26,7 +27,7 @@ const ClientsPage = () => {
         console.error("Error fetching clients:", error);
         setError("Failed to fetch clients."); // Set error message
         setLoading(false); // Stop loading even if there's an error
-      }, 5000);
+      },);
   }, []);
 
   // Filtered clients based on search and role

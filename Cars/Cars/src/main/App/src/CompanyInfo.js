@@ -1,4 +1,16 @@
+import { useNavigate } from "react-router-dom";
+
 function CompanyInfo() {
+
+  const navigate = useNavigate();
+
+  const handleNavigation = (e) => {
+    // Get the path from the data attribute
+    const path = e.target.getAttribute("data-path");
+    if (path) {
+      navigate(path);
+    }
+  };
   return (
     <div className="bg-gradient-to-r from-violet-600 to-purple-800 text-white p-8">
       <div className=" p-6 rounded-lg  max-w-screen-lg mx-auto">
@@ -43,6 +55,8 @@ function CompanyInfo() {
         <div className="mt-8 text-center">
           <a
             href="#contact"
+            data-path="/contact"
+            onClick={handleNavigation}
             className="bg-gradient-to-r from-pink-600 to-violet-700 px-8 py-4 text-white rounded-full font-semibold hover:bg-gradient-to-l hover:from-pink-500 hover:to-violet-600 transition-all"
           >
             Get in Touch
