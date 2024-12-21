@@ -70,7 +70,7 @@ const CarInfoPage = () => {
           />
         </div>
 
-        {/* Center Section: Car Info */}
+        
         <div
           className="bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center justify-center relative"
           onMouseEnter={() => setIsHovered(true)}

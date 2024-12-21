@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import HomeP from "./HomeP";
 import Login from "./LoginP";
+import ReservationForm from "./ReservationForm";
 import CarPage from "./CarPage";
 import CarDetails from "./CarDetails";
 import AboutPage from "./AboutPage";
@@ -41,10 +42,12 @@ function App() {
         <Route path="/clients" element={<ClientsPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/carpage" element={<CarPage />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/car1/:id" element={<CarDetails />} />
         <Route path="/Sales" element={<SalesPage />} />
         <Route path="/Notif" element={<NotificationsPage />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/Reservform" element={<ReservationForm />} />
       </Routes>
     </Router>
   );

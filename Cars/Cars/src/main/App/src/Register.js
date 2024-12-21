@@ -1,7 +1,7 @@
 import logo from "./Logo2.png";
 import { useState } from "react";
 import InputField from "./Field";
-import axios from 'axios';
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const Register = ({ SetForgotpasswd, SetSign, Sign }) => {
@@ -12,86 +12,15 @@ const Register = ({ SetForgotpasswd, SetSign, Sign }) => {
   const [adresse, setAdresse] = useState("");
   const [tele, setTele] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const navigate =useNavigate();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check if the form is for login or sign-up
     if (Sign) {
-      // For login
-      if (email && password) {
-        try {
-          // Send login data to the back-end (Spring Boot)
-          const response = await axios.post(
-            "http://localhost:8080/utilisateur/login",
-            { 
-              email: email,
-              password: password, 
-            },
-            {
-              headers: {
-                'Content-Type': 'application/json', // Ensures that the backend expects JSON
-              },
-            }
-          );
-          console.log("Login successful:", response.data);
-          // Optionally, you can store the response data like JWT token or user info if needed
-          clearFields();
-          navigate("/admin");
-        } catch (error) {
-          console.error("Login error:", error.response ? error.response.data : error.message);
-          alert(error.response ? error.response.data : "Login failed");
-        }
-      } else {
-        alert("Please fill in both email and password");
-        console.log("Email or Password is missing.");
-      }
+      // Login Logic
     } else {
-      // For sign-up
-      if (
-        email &&
-        password &&
-        confirmPassword &&
-        name &&
-        prenom &&
-        adresse &&
-        tele
-      ) {
-        if (password === confirmPassword) {
-          try {
-            // Send the registration data to the back-end (Spring Boot)
-            const response = await axios.post(
-              "http://localhost:8080/utilisateur/add",
-              {
-                nom: name,
-                prenom: prenom,
-                adresse: adresse,
-                numTelephone: tele,
-                email: email,
-                password: password,
-              },
-              {
-                headers: {
-                  'Content-Type': 'application/json', // Ensures that the backend expects JSON
-                },
-              }
-            );
-            console.log("User registered:", response.data);
-            clearFields();
-            alert("Registration successful");
-          } catch (error) {
-            alert("Error registering user");
-            console.error("Error registering user:", error);
-          }
-        } else {
-          alert("Passwords do not match");
-          clearFields();
-        }
-      } else {
-        alert("Please fill all the fields");
-        console.log("Some fields are missing");
-      }
+      // Sign Up Logic
     }
   };
 
@@ -121,10 +50,12 @@ const Register = ({ SetForgotpasswd, SetSign, Sign }) => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 pt-40 pb-40">
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 pt-20 pb-40">
       <form
         onSubmit={handleSubmit}
-        className="bg-white shadow-xl rounded-3xl p-8 max-w-md w-full space-y-8 transform transition duration-300"
+        className={`bg-white shadow-xl rounded-3xl p-8 ${
+          Sign ? "max-w-sm" : "max-w-2xl"
+        } w-full space-y-8`}
       >
         {/* Logo Section */}
         <div className="flex justify-center">
@@ -136,8 +67,27 @@ const Register = ({ SetForgotpasswd, SetSign, Sign }) => {
         </div>
 
         {/* Conditional Input Fields */}
-        {!Sign && (
+        {Sign ? (
+          // Sign In View
           <>
+            <InputField
+              label="Email"
+              type="text"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+            />
+            <InputField
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+            />
+          </>
+        ) : (
+          // Sign Up View
+          <div className="grid grid-cols-2 gap-4">
             <InputField
               label="Name"
               type="text"
@@ -166,47 +116,45 @@ const Register = ({ SetForgotpasswd, SetSign, Sign }) => {
               onChange={(e) => setTele(e.target.value)}
               placeholder="Enter your phone number"
             />
-          </>
-        )}
-
-        {/* Email and Password Fields */}
-        <InputField
-          label="Email"
-          type="text"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your email"
-        />
-        <InputField
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter your password"
-        />
-        {!Sign && (
-          <InputField
-            label="Confirm Password"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Confirm your password"
-          />
+            <InputField
+              label="Email"
+              type="text"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+            />
+            <InputField
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+            />
+            <InputField
+              label="Confirm Password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm your password"
+            />
+          </div>
         )}
 
         {/* Remember Me and Forgot Password */}
-        <div className="flex justify-between items-center">
-          <label className="flex items-center text-sm text-gray-700">
-            <input type="checkbox" className="mr-2" />
-            Remember me
-          </label>
-          <span
-            onClick={handleForgotPassword}
-            className="text-sm text-blue-500 cursor-pointer hover:underline"
-          >
-            Forgot password?
-          </span>
-        </div>
+        {Sign && (
+          <div className="flex justify-between items-center">
+            <label className="flex items-center text-sm text-gray-700">
+              <input type="checkbox" className="mr-2" />
+              Remember me
+            </label>
+            <span
+              onClick={handleForgotPassword}
+              className="text-sm text-blue-500 cursor-pointer hover:underline"
+            >
+              Forgot password?
+            </span>
+          </div>
+        )}
 
         {/* Submit Button */}
         <button

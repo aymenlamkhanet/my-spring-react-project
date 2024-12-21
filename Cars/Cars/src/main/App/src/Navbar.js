@@ -59,6 +59,16 @@ function Navbar() {
               Contact
             </a>
           </li>
+          <li>
+            <a
+              href="#contact"
+              data-path="/login"
+              onClick={handleNavigation}
+              className="px-4 py-2 rounded-full bg-violet-50 text-sm md:text-lg hover:bg-violet-100 text-violet-700 transition-all duration-300 focus:ring-2 focus:ring-violet-600"
+            >
+              Login
+            </a>
+          </li>
         </div>
       </ul>
     </div>
