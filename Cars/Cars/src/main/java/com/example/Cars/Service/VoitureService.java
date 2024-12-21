@@ -9,10 +9,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class VoitureService {
 
     private final VoitureRepo voitureRepo;
+
+    public VoitureService(VoitureRepo voitureRepo) {
+        this.voitureRepo = voitureRepo;
+    }
 
     // Create or update Voiture
     public Voiture saveVoiture(Voiture voiture) {

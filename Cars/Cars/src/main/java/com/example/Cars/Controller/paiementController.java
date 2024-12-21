@@ -12,12 +12,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/paiements")
 public class paiementController {
 
     private final paiementService paiementService;
 
+    public paiementController(com.example.Cars.Service.paiementService paiementService) {
+        this.paiementService = paiementService;
+    }
 
     // Create a new payment
     @PostMapping("/add")

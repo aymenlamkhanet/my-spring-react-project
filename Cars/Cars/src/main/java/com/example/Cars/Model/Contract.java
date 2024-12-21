@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 
-@Data
+
 @Entity
 public class Contract {
     @Id
@@ -14,6 +14,37 @@ public class Contract {
     @Column(name = "id")
     private Long id;
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Reservation getReservation() {
+        return reservation;
+    }
+
+    public void setReservation(Reservation reservation) {
+        this.reservation = reservation;
+    }
+
+    public String getContractDetails() {
+        return contractDetails;
+    }
+
+    public void setContractDetails(String contractDetails) {
+        this.contractDetails = contractDetails;
+    }
+
+    public LocalDateTime getContractDate() {
+        return contractDate;
+    }
+
+    public void setContractDate(LocalDateTime contractDate) {
+        this.contractDate = contractDate;
+    }
 
     @ManyToOne
     @JoinColumn(name = "reservation_id", nullable = false)

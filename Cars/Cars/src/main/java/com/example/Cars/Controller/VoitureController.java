@@ -12,7 +12,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/voitures")
-@RequiredArgsConstructor
 public class VoitureController {
 
     private final VoitureService voitureService;
@@ -22,6 +21,10 @@ public class VoitureController {
     public ResponseEntity<Voiture> addVoiture(@RequestBody Voiture voiture) {
         Voiture savedVoiture = voitureService.saveVoiture(voiture);
         return ResponseEntity.ok(savedVoiture);
+    }
+
+    public VoitureController(VoitureService voitureService) {
+        this.voitureService = voitureService;
     }
 
     // Get all Voitures

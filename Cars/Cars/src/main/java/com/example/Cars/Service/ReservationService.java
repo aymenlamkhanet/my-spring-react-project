@@ -12,17 +12,21 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ReservationService {
 
     private final ReservationRepo reservationRepo;
     private final VoitureRepo voitureRepo;
     private final UtilisateurRepo utilisateurRepo;
 
+    public ReservationService(ReservationRepo reservationRepo, VoitureRepo voitureRepo, UtilisateurRepo utilisateurRepo) {
+        this.reservationRepo = reservationRepo;
+        this.voitureRepo = voitureRepo;
+        this.utilisateurRepo = utilisateurRepo;
+    }
 
     public Reservation createReservation(Reservation reservation) {
         Voiture voiture = voitureRepo.findById(reservation.getVoiture().getId()).orElse(null);
-        Utilisateur utilisateur = utilisateurRepo.findById(reservation.getVoiture().getId()).orElse(null);
+        Utilisateur utilisateur = utilisateurRepo.findById(reservation.getUtilisateur().getId()).orElse(null);
         reservation.setId(null);
         reservation.setVoiture(voiture);
         reservation.setUtilisateur(utilisateur);
@@ -37,6 +41,15 @@ public class ReservationService {
     public Reservation getReservationById(Long id) {
         return reservationRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reservation not found with ID: " + id));
+    }
+
+
+    public List<Reservation> getReservationsByUtilisateurId(Long utilisateurId) {
+        return reservationRepo.findByUtilisateurId(utilisateurId);
+    }
+
+    public List<Reservation> getReservationsByVoitureId(Long voitureId) {
+        return reservationRepo.findByVoitureId(voitureId);
     }
 
     public Reservation updateReservation(Long id, Reservation reservationDetails) {

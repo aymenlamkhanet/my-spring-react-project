@@ -12,10 +12,14 @@ import com.example.Cars.Model.paiement;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class paiementService {
     private  final paiementRepo paiementRepo ;
     private final ReservationRepo reservationRepo;
+
+    public paiementService(com.example.Cars.Repository.paiementRepo paiementRepo, ReservationRepo reservationRepo) {
+        this.paiementRepo = paiementRepo;
+        this.reservationRepo = reservationRepo;
+    }
 
     public paiement createPaiement(paiement paiement) {
         if (paiement == null || paiement.getReservation() == null || paiement.getReservation().getId() == null) {

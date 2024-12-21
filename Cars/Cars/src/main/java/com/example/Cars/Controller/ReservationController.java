@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/reservations")
-@RequiredArgsConstructor
 public class ReservationController {
 
     private final ReservationService reservationService;
@@ -20,6 +19,10 @@ public class ReservationController {
     public ResponseEntity<Reservation> createReservation(@RequestBody Reservation reservation) {
         Reservation savedReservation = reservationService.createReservation(reservation);
         return ResponseEntity.ok(savedReservation);
+    }
+
+    public ReservationController(ReservationService reservationService) {
+        this.reservationService = reservationService;
     }
 
     // Get all reservations
@@ -34,6 +37,16 @@ public class ReservationController {
     public ResponseEntity<Reservation> getReservationById(@PathVariable Long id) {
         Reservation reservation = reservationService.getReservationById(id);
         return ResponseEntity.ok(reservation);
+    }
+
+    @GetMapping("/byUtilisateur/{utilisateurId}")
+    public List<Reservation> getReservationsByUtilisateur(@PathVariable Long utilisateurId) {
+        return reservationService.getReservationsByUtilisateurId(utilisateurId);
+    }
+
+    @GetMapping("/byVoiture/{voitureId}")
+    public List<Reservation> getReservationsByVoiture(@PathVariable Long voitureId) {
+        return reservationService.getReservationsByVoitureId(voitureId);
     }
 
 

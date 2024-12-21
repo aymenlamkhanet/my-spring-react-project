@@ -11,10 +11,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class UtilisateurService {
 
     private final UtilisateurRepo utilisateurRepository;
+
+    public UtilisateurService(UtilisateurRepo utilisateurRepository) {
+        this.utilisateurRepository = utilisateurRepository;
+    }
 
     public Utilisateur postUtilisateur(Utilisateur utilisateur) {
         if (utilisateur.getRole() == null) {
@@ -52,5 +55,9 @@ public class UtilisateurService {
         }
 
 
+    }
+
+    public Long size() {
+        return utilisateurRepository.count();
     }
 }

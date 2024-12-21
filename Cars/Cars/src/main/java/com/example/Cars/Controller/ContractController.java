@@ -10,11 +10,14 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/Contract")
 public class ContractController {
 
     private final ContractService contractService;
+
+    public ContractController(ContractService contractService) {
+        this.contractService = contractService;
+    }
 
     @PostMapping("/add")
     public Contract createContract(@RequestBody Contract contract) {

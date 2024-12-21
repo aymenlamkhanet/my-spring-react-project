@@ -7,17 +7,20 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 
+
 import java.util.List;
 
 
 @RestController
 @RequestMapping("/utilisateur")
-@RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000")
 public class UtilisateurController {
 
     private final UtilisateurService utilisateurService;
 
+    public UtilisateurController(UtilisateurService utilisateurService) {
+        this.utilisateurService = utilisateurService;
+    }
 
     // Create a new Utilisateur
     @PostMapping("/add")
@@ -50,10 +53,16 @@ public class UtilisateurController {
         }
     }
 
-    @GetMapping("/{id}")
+
+
+    @GetMapping("get/{id}")
     public Utilisateur getUtilisateur(@PathVariable Long id) {
+
+
         return utilisateurService.getUtilisateurById(id);
     }
+
+
 
 
 

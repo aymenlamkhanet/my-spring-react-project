@@ -3,16 +3,21 @@ package com.example.Cars.Service;
 import com.example.Cars.Model.Contract;
 import com.example.Cars.Repository.ContractRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class ContractService {
+    public ContractService(ContractRepo contractrepo, ContractRepo contractRepo) {
+        Contractrepo = contractrepo;
+        this.contractRepo = contractRepo;
+    }
 
     private final ContractRepo Contractrepo;
+
     private final ContractRepo contractRepo;
 
     public Contract createContract(Contract contract) {
