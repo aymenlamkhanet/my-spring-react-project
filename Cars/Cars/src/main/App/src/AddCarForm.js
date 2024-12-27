@@ -15,10 +15,8 @@ const AddCarForm = () => {
     immatriculation: "",
     image: null,
   });
-
   const [imagePreview, setImagePreview] = useState(null);
   const [toast, setToast] = useState(null);
-
   const showToast = (type, message, description) => {
     setToast({ type, message, description });
     setTimeout(() => setToast(null), 3000);

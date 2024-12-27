@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Footer from "./Footer";
+import Navbar from "./Navbar";
+
+const items = ["Home", "About", "Contact"];
 
 const CarDetailsPage = () => {
+
+
   const [activeTab, setActiveTab] = useState("description");
   const [voiture, setVoiture] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +23,7 @@ const CarDetailsPage = () => {
       .then((response) => {
         console.log(response.data);
         setVoiture(response.data);
+        localStorage.setItem("carDetails", JSON.stringify(response.data));
         setLoading(false);
       })
       .catch((error) => {
@@ -24,7 +31,7 @@ const CarDetailsPage = () => {
         setError("Failed fetching Car with the id ");
         setLoading(false);
       });
-  });
+  },[id]);
 
   const transformCarData = {
     id: voiture.id,
@@ -42,6 +49,22 @@ const CarDetailsPage = () => {
     rating: voiture.statut === "Disponible" ? 4 : 3,
     image: voiture.image,
   };
+
+  const navigate = useNavigate();
+
+  const handleNavigation = (e) => {
+    const path = e.target.getAttribute("data-path");
+    const user = JSON.parse(localStorage.getItem("user")) || {};
+
+    if (!user || Object.keys(user).length === 0) {
+      navigate("/login");
+    } else {
+      if (path) {
+        navigate(path);
+      }
+    }
+  };
+
 
   // Example car details embedded directly
   const car = {
@@ -135,157 +158,167 @@ const CarDetailsPage = () => {
   const handleTabClick = (tab) => setActiveTab(tab);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="flex flex-col lg:flex-row bg-white shadow-lg rounded-lg overflow-hidden">
-        {/* Left Image Section */}
-        <div className="w-full lg:w-1/2">
-          <img
-            src={`http://localhost:8080${voiture.image}`}
-            alt={voiture.name}
-            height="900px"
-            width="900px"
-            className="object-cover"
-          />
+    <>
+      <Navbar items={items} />
+      <div className="min-h-screen bg-gray-100 p-8">
+        <div className="flex flex-col lg:flex-row bg-white shadow-lg rounded-lg overflow-hidden">
+          {/* Left Image Section */}
+          <div className="w-full lg:w-1/2">
+            <img
+              src={`http://localhost:8080${voiture.image}`}
+              alt={voiture.name}
+              height="900px"
+              width="900px"
+              className="object-cover"
+            />
+          </div>
+
+          {/* Right Details Section */}
+          <div className="w-full lg:w-1/2 p-8">
+            <h1 className="text-3xl font-bold text-gray-800">
+              {transformCarData.name}
+            </h1>
+
+            {/* Rating */}
+            <div className="flex items-center mt-4">
+              {Array.from({ length: transformCarData.rating }, (_, index) => (
+                <span key={index} className="text-yellow-500 text-xl">
+                  ★
+                </span>
+              ))}
+              {Array.from(
+                { length: 5 - transformCarData.rating },
+                (_, index) => (
+                  <span key={index} className="text-gray-300 text-xl">
+                    ★
+                  </span>
+                )
+              )}
+            </div>
+
+            {/* Price */}
+            <div className="mt-4">
+              {car.isDiscounted ? (
+                <div>
+                  <span className="text-gray-500 line-through">
+                    {transformCarData.price}
+                  </span>{" "}
+                  <span className="text-green-500 font-bold">
+                    {transformCarData.discountPrice}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-gray-800 font-bold text-xl">
+                  {transformCarData.price}
+                </span>
+              )}
+            </div>
+
+            {/* Medium Description */}
+            <p className="mt-6 text-gray-600">{transformCarData.description}</p>
+
+            {/* Key Features */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                Key Features:
+              </h3>
+              <ul className="list-disc ml-5 space-y-1 text-gray-700">
+                <li>Spacious interior</li>
+                <li>Advanced safety features</li>
+                <li>Fuel efficiency</li>
+                <li>Stylish design</li>
+              </ul>
+            </div>
+
+            {/* Reserve Now Button */}
+            <div className="mt-6">
+              
+                <button 
+                data-path="/Reservform"
+                onClick={handleNavigation}
+                className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition text-lg">
+                  Reserve Now
+                </button>
+              
+            </div>
+
+            {/* Contact Info */}
+            <div className="mt-6 text-gray-700">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                Contact Information:
+              </h3>
+              <p>📞 Phone: +1 (555) 123-4567</p>
+              <p>📧 Email: info@carsales.com</p>
+              <p>🏢 Location: 123 Car Sales Blvd, AutoCity</p>
+            </div>
+          </div>
         </div>
 
-        {/* Right Details Section */}
-        <div className="w-full lg:w-1/2 p-8">
-          <h1 className="text-3xl font-bold text-gray-800">
-            {transformCarData.name}
-          </h1>
-
-          {/* Rating */}
-          <div className="flex items-center mt-4">
-            {Array.from({ length: transformCarData.rating }, (_, index) => (
-              <span key={index} className="text-yellow-500 text-xl">
-                ★
-              </span>
-            ))}
-            {Array.from({ length: 5 - transformCarData.rating }, (_, index) => (
-              <span key={index} className="text-gray-300 text-xl">
-                ★
-              </span>
+        {/* Tabs Section */}
+        <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
+          <div className="flex border-b">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleTabClick(tab.id)}
+                className={`flex-1 py-2 text-center ${
+                  activeTab === tab.id
+                    ? "text-blue-600 border-b-2 border-blue-600 font-bold"
+                    : "text-gray-500"
+                }`}
+              >
+                {tab.label}
+              </button>
             ))}
           </div>
 
-          {/* Price */}
-          <div className="mt-4">
-            {car.isDiscounted ? (
-              <div>
-                <span className="text-gray-500 line-through">
-                  {transformCarData.price}
-                </span>{" "}
-                <span className="text-green-500 font-bold">
-                  {transformCarData.discountPrice}
-                </span>
+          <div className="p-6 space-y-8">
+            {" "}
+            {/* Add space between sections */}
+            {activeTab === "description" && (
+              <p className="text-gray-700 p-4 bg-gray-100 rounded-lg">
+                {car.description}
+              </p>
+            )}
+            {activeTab === "info" && (
+              <div className="text-gray-700 space-y-2 p-4 bg-gray-100 rounded-lg">
+                <ul>
+                  <li>
+                    <strong>Year:</strong> {transformCarData.year}
+                  </li>
+                  <li>
+                    <strong>Fuel:</strong> {transformCarData.fuel}
+                  </li>
+                  <li>
+                    <strong>Type:</strong> {transformCarData.type}
+                  </li>
+                </ul>
+                <p className="mt-4">{car.additionalInfo}</p>{" "}
+                {/* Display additional info */}
               </div>
-            ) : (
-              <span className="text-gray-800 font-bold text-xl">
-                {transformCarData.price}
-              </span>
+            )}
+            {activeTab === "colorGuide" && (
+              <p className="text-gray-700 p-4 bg-gray-100 rounded-lg">
+                {car.colorGuide}
+              </p>
+            )}
+            {activeTab === "faq" && (
+              <ul className="text-gray-700 space-y-4 p-4 bg-gray-100 rounded-lg">
+                {car.faq.map((faq, index) => (
+                  <li key={index} className="p-3 bg-white rounded shadow">
+                    <strong className="block text-gray-900">
+                      Q: {faq.question}
+                    </strong>
+                    <span className="block text-gray-700">A: {faq.answer}</span>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
-
-          {/* Medium Description */}
-          <p className="mt-6 text-gray-600">{transformCarData.description}</p>
-
-          {/* Key Features */}
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              Key Features:
-            </h3>
-            <ul className="list-disc ml-5 space-y-1 text-gray-700">
-              <li>Spacious interior</li>
-              <li>Advanced safety features</li>
-              <li>Fuel efficiency</li>
-              <li>Stylish design</li>
-            </ul>
-          </div>
-
-          {/* Reserve Now Button */}
-          <div className="mt-6">
-            <button className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition text-lg">
-              Reserve Now
-            </button>
-          </div>
-
-          {/* Contact Info */}
-          <div className="mt-6 text-gray-700">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              Contact Information:
-            </h3>
-            <p>📞 Phone: +1 (555) 123-4567</p>
-            <p>📧 Email: info@carsales.com</p>
-            <p>🏢 Location: 123 Car Sales Blvd, AutoCity</p>
-          </div>
         </div>
+        <Footer />
       </div>
-
-      {/* Tabs Section */}
-      <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
-        <div className="flex border-b">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabClick(tab.id)}
-              className={`flex-1 py-2 text-center ${
-                activeTab === tab.id
-                  ? "text-blue-600 border-b-2 border-blue-600 font-bold"
-                  : "text-gray-500"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        <div className="p-6 space-y-8">
-          {" "}
-          {/* Add space between sections */}
-          {activeTab === "description" && (
-            <p className="text-gray-700 p-4 bg-gray-100 rounded-lg">
-              {car.description}
-            </p>
-          )}
-          {activeTab === "info" && (
-            <div className="text-gray-700 space-y-2 p-4 bg-gray-100 rounded-lg">
-              <ul>
-                <li>
-                  <strong>Year:</strong> {transformCarData.year}
-                </li>
-                <li>
-                  <strong>Fuel:</strong> {transformCarData.fuel}
-                </li>
-                <li>
-                  <strong>Type:</strong> {transformCarData.type}
-                </li>
-              </ul>
-              <p className="mt-4">{car.additionalInfo}</p>{" "}
-              {/* Display additional info */}
-            </div>
-          )}
-          {activeTab === "colorGuide" && (
-            <p className="text-gray-700 p-4 bg-gray-100 rounded-lg">
-              {car.colorGuide}
-            </p>
-          )}
-          {activeTab === "faq" && (
-            <ul className="text-gray-700 space-y-4 p-4 bg-gray-100 rounded-lg">
-              {car.faq.map((faq, index) => (
-                <li key={index} className="p-3 bg-white rounded shadow">
-                  <strong className="block text-gray-900">
-                    Q: {faq.question}
-                  </strong>
-                  <span className="block text-gray-700">A: {faq.answer}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-      <Footer />
-    </div>
+    </>
   );
 };
 

@@ -14,15 +14,61 @@ const Register = ({ SetForgotpasswd, SetSign, Sign }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
+  try {
     if (Sign) {
-      // Login Logic
+      console.log(email, password);
+      const response = await axios.post(
+        "http://localhost:8080/utilisateur/login",
+        { email, password }
+      );
+      const { id, message } = response.data;
+      if (id) {
+        const userResponse = await axios.get(
+          `http://localhost:8080/utilisateur/get/${id}`
+        );
+        const user = userResponse.data;
+        localStorage.setItem("user", JSON.stringify(user));
+        navigate("/carpage");
+      } else {
+        alert(message || "Login failed. Please try again.");
+      }
     } else {
-      // Sign Up Logic
+      const response = await axios.post("/api/signup", {
+        email,
+        password,
+        name,
+        prenom,
+        adresse,
+        tele,
+        confirmPassword,
+      });
+
+      const { success, message } = response.data;
+
+      if (success) {
+        alert("Account created successfully. Please log in.");
+        handleSignInClick();
+      } else {
+        alert(message || "Signup failed. Please try again.");
+      }
     }
-  };
+  } catch (error) {
+    console.error("Error during authentication:", error);
+
+    if (error.response && error.response.data) {
+      alert(
+        error.response.data.message || "An error occurred. Please try again."
+      );
+    } else {
+      alert("An error occurred. Please check your connection and try again.");
+    }
+  }
+};
+
+  
 
   const handleForgotPassword = () => {
     clearFields();
@@ -66,7 +112,7 @@ const Register = ({ SetForgotpasswd, SetSign, Sign }) => {
           />
         </div>
 
-        {/* Conditional Input Fields */}
+        
         {Sign ? (
           // Sign In View
           <>

@@ -27,8 +27,8 @@ const ReservationDetailPage = () => {
   const { id } = useParams();
   const [user, setUser] = useState([]);
   const [reservations, setReservations] = useState([]);
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
+  const [loading, setLoading] = useState(true); 
+  const [error, setError] = useState(null); 
 
   useEffect(() => {
     setLoading(true);

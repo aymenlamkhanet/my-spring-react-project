@@ -1,6 +1,10 @@
 import axios from "axios";
 import React, { useEffect, useState  } from "react";
 import { useNavigate } from "react-router-dom";
+import Navbar from "./Navbar";
+
+
+const items = ["Home", "About", "Contact"];
 
 
 const CarPage = () => {
@@ -69,12 +73,11 @@ const CarPage = () => {
     return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
 
   return (
+    <>
+      <Navbar items={items} />
     <div className="flex bg-white">
-      {/* Sidebar */}
       <aside className="hidden lg:block top-0 left-0 h-full w-1/4 p-6 overflow-y-auto">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Filters</h2>
-
-        {/* Car Type Filter */}
         <div className="mb-4">
           <label
             htmlFor="carType"
@@ -245,6 +248,7 @@ const CarPage = () => {
         </div>
       </main>
     </div>
+    </>
   );
 };
 
