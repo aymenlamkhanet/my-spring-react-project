@@ -8,9 +8,10 @@ import {
   Image,
   pdf,
 } from "@react-pdf/renderer";
+import axios from "axios";
 import logo from "./Logo2.png";
+import signature from "./signature.png";
 
-// PDF Styles
 const styles = StyleSheet.create({
   page: {
     padding: 50,
@@ -46,6 +47,11 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: "justify",
   },
+  signatureImage: {
+    width: 150, // Adjust the size as needed
+    height: 50,
+    marginVertical: 5,
+  },
   signatureSection: {
     marginTop: 30,
     flexDirection: "row",
@@ -70,7 +76,7 @@ const styles = StyleSheet.create({
 // PDF Component
 const RentalAgreementPDF = ({ reservation, user, currentDate }) => {
   const reference = Math.random().toString(36).substr(2, 9).toUpperCase();
-  const representativeName = "John Smith";
+  const representativeName = "Aymen Lamkhanet";
 
   return (
     <Document>
@@ -126,6 +132,7 @@ const RentalAgreementPDF = ({ reservation, user, currentDate }) => {
             <Text style={styles.signatureLine}>_________________________</Text>
             <Text>{representativeName}</Text>
             <Text>Date: {currentDate}</Text>
+            <Image style={styles.signatureImage} src={signature} />
           </View>
         </View>
 
@@ -138,21 +145,46 @@ const RentalAgreementPDF = ({ reservation, user, currentDate }) => {
   );
 };
 
-// Generate PDF function
 const generateContract = async (reservation, user, currentDate) => {
-  const blob = await pdf(
-    <RentalAgreementPDF
-      reservation={reservation}
-      user={user}
-      currentDate={currentDate}
-    />
-  ).toBlob();
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "rental_agreement.pdf";
-  link.click();
-  URL.revokeObjectURL(url);
+  try {
+    // Generate PDF blob
+    const pdfBlob = await pdf(
+      <RentalAgreementPDF
+        reservation={reservation}
+        user={user}
+        currentDate={currentDate}
+      />
+    ).toBlob();
+
+    const formData = new FormData();
+    const fileName = `rental_agreement_${
+      reservation.id
+    }_${new Date().getTime()}.pdf`;
+    formData.append(
+      "file",
+      new File([pdfBlob], fileName, { type: "application/pdf" })
+    );
+
+    // Save to server
+    await axios.post("http://localhost:8080/Contract/save-pdf", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    // Also trigger download in browser
+    const url = URL.createObjectURL(pdfBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    return true;
+  } catch (error) {
+    console.error("Error generating contract:", error);
+    return false;
+  }
 };
 
 // Main Component
@@ -160,10 +192,18 @@ const ReservationSuccess = () => {
   const reservation = JSON.parse(localStorage.getItem("lastReservation")) || {};
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const currentDate = new Date().toLocaleDateString();
-  const reference = Math.random().toString(36).substr(2, 9).toUpperCase();
+  const [isGenerating, setIsGenerating] = React.useState(false);
 
-  const handleDownload = () => {
-    generateContract(reservation, user, currentDate);
+  const handleDownload = async () => {
+    setIsGenerating(true);
+    try {
+      const success = await generateContract(reservation, user, currentDate);
+      if (!success) {
+        alert("Error generating contract. Please try again.");
+      }
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -211,11 +251,12 @@ const ReservationSuccess = () => {
           </div>
 
           <button
-            onClick={handleDownload}
-            className="mt-8 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors w-full"
-          >
-            Download Full Agreement
-          </button>
+      onClick={handleDownload}
+      disabled={isGenerating}
+      className="mt-8 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors w-full disabled:bg-blue-400"
+    >
+      {isGenerating ? "Generating..." : "Download Full Agreement"}
+    </button>
         </div>
       </div>
 
@@ -269,7 +310,7 @@ const ReservationSuccess = () => {
             <p className="mb-4">
               Your rental documents have been sent to {user.email}
             </p>
-            <p className="text-sm">Booking Reference: #{reference}</p>
+            <p className="text-sm">Booking Reference: #</p>
           </div>
         </div>
       </div>
