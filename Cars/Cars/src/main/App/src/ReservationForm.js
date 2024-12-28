@@ -111,6 +111,34 @@ const ReservationPage = () => {
       const reservationResponseData = await reservationResponse.json();
       const reservationId = reservationResponseData.id; // Assuming the response contains the reservation ID
 
+
+      const contractData = {
+        reservation: {
+          id: reservationId,
+        },
+        contractDetails: `Rental contract for ${carDetails.marque} ${
+          carDetails.modele
+        } from ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}. Total amount: ${
+          formData.montantTotal
+        } DHS.`,
+        contractDate: new Date().toISOString().slice(0, 19), // Format: YYYY-MM-DDTHH:mm:ss
+      };
+
+      const contractResponse = await fetch(
+        "http://localhost:8080/Contract/add",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(contractData),
+        }
+      );
+
+      if (!contractResponse.ok) {
+        throw new Error("Failed to create contract.");
+      }
+
       // Prepare the payment data with the reservation ID
       const updatedPaymentData = {
         ...paymentData,

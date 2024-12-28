@@ -159,7 +159,7 @@ const generateContract = async (reservation, user, currentDate) => {
     const formData = new FormData();
     const fileName = `rental_agreement_${
       reservation.id
-    }_${new Date().getTime()}.pdf`;
+    }.pdf`;
     formData.append(
       "file",
       new File([pdfBlob], fileName, { type: "application/pdf" })

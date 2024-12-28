@@ -71,6 +71,15 @@ const Sidebar = () => {
         </li>
         <li>
           <Link
+            to="/contracts"
+            className="flex items-center space-x-2 text-white hover:bg-blue-700 p-2 rounded"
+          >
+            <span>📄</span>
+            <span>Contracts</span>
+          </Link>
+        </li>
+        <li>
+          <Link
             to="/Notif"
             className="flex items-center space-x-2 text-white hover:bg-blue-700 p-2 rounded"
           >

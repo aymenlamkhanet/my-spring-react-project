@@ -23,6 +23,8 @@ import PaymentInfoPage from "./PaymentInfoPage";
 import SalesPage from "./SalesPage";
 import NotificationsPage from "./NotificationsPage";
 import ReservationSuccess from "./ReservationSuccess";
+import MyProfilePage from "./MyProfilePage";
+import ContractPage from "./ContractPage";
 
 function App() {
   return (
@@ -37,6 +39,8 @@ function App() {
         <Route path="/carpage" element={<CarPage />} />
         <Route path="/car1/:id" element={<CarDetails />} />
         <Route path="/CarsPage" element={<CarsPage />} />
+        <Route path="/myprofile" element={<MyProfilePage />} />
+        <Route path="/contracts" element={<ContractPage />} />
 
         {/* Protected Routes for Admin */}
         <Route
@@ -47,6 +51,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        {/*<Route
+          path="/contrcat"
+          element={
+            <ProtectedRoute requiredRole="ADMINISTRATOR">
+              <ContractPage />
+            </ProtectedRoute>
+          }
+        />*/}
         <Route
           path="/PaymentPage"
           element={

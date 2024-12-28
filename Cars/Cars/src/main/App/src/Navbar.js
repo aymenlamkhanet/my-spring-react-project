@@ -123,7 +123,7 @@ function Navbar() {
                     </div>
                     <a
                       href="#profile"
-                      data-path="/profile"
+                      data-path="/myprofile"
                       onClick={handleNavigation}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-violet-50 cursor-pointer"
                     >

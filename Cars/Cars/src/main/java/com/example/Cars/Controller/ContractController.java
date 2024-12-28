@@ -4,6 +4,8 @@ package com.example.Cars.Controller;
 import com.example.Cars.Model.Contract;
 import com.example.Cars.Service.ContractService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,6 +51,22 @@ public class ContractController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to upload file: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/pdf/{filename:.+}")
+    public ResponseEntity<byte[]> getPdf(@PathVariable String filename) {
+        try {
+            Path filePath = Paths.get(UPLOAD_DIR + filename);
+            byte[] content = Files.readAllBytes(filePath);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.notFound().build();
         }
     }
 
