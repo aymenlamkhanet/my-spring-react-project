@@ -153,65 +153,123 @@ const styles = {
     fontSize: "0.875rem",
   },
 };
-
 const UserProfilePage = () => {
-  const [user, setUser] = useState({
-    nom: "John",
-    prenom: "Doe",
-    email: "john.doe@example.com",
-    adresse: "123 Main St",
-    numTelephone: "+1234567890",
-    role: "Client",
+  const [user, setUser] = useState(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user")) || {};
+    return {
+      nom: storedUser.nom || "",
+      prenom: storedUser.prenom || "",
+      email: storedUser.email || "",
+      adresse: storedUser.adresse || "",
+      numTelephone: storedUser.numTelephone || "",
+      role: storedUser.role || "",
+      id: storedUser.id,
+    };
   });
 
   const [reservations, setReservations] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState(user);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Fetch reservations for the authenticated user
   useEffect(() => {
-    setReservations([
-      {
-        id: 1,
-        dateReservation: "2024-01-01",
-        dateFin: "2024-01-05",
-        montantTotal: 300,
-        status: "completed",
-        voiture: {
-          id: 1,
-          marque: "BMW",
-          modele: "X5",
-          type: "SUV",
-          tarifLocation: 100,
-        },
-      },
-      {
-        id: 2,
-        dateReservation: "2024-02-01",
-        dateFin: "2024-02-03",
-        montantTotal: 200,
-        status: "completed",
-        voiture: {
-          id: 2,
-          marque: "Mercedes",
-          modele: "C-Class",
-          type: "Sedan",
-          tarifLocation: 80,
-        },
-      },
-    ]);
-  }, []);
+    const fetchReservations = async () => {
+      if (!user.id) {
+        setError("No user ID found");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `http://localhost:8080/reservations/byUtilisateur/${user.id}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch reservations");
+        }
+        let data = await response.json();
+
+        // Set all fetched reservations to completed
+        data = data.map((reservation) => ({
+          ...reservation,
+          status: "completed",
+        }));
+
+        // Add static reservation with "in progress" status if count >= 2
+        if (data.length >= 2) {
+          data.push({
+            id: Date.now(),
+            dateReservation: new Date().toISOString(),
+            dateFin: new Date(
+              Date.now() + 7 * 24 * 60 * 60 * 1000
+            ).toISOString(),
+            montantTotal: 450,
+            status: "in progress", // Changed status to "in progress"
+            voiture: {
+              id: data.length + 1,
+              marque: "Audi",
+              modele: "Q7",
+              type: "SUV",
+              tarifLocation: 150,
+            },
+          });
+        }
+
+        setReservations(data);
+        setIsLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setIsLoading(false);
+      }
+    };
+
+    fetchReservations();
+  }, [user.id]);
 
   const handleEdit = () => {
     setIsEditing(true);
     setEditedUser(user);
   };
 
-  const handleSave = () => {
-    setUser(editedUser);
-    setIsEditing(false);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+  const handleSave = async () => {
+    try {
+      // Make API request to update user
+      const response = await fetch(
+        `http://localhost:8080/utilisateur/${user.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...editedUser,
+            password: user.password, // Keep the existing password
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update user information");
+      }
+
+      const updatedUser = await response.json();
+
+      // Update localStorage with new user data
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
+      // Update state
+      setUser(updatedUser);
+      setIsEditing(false);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (err) {
+      setError(err.message);
+      // You might want to show an error message to the user here
+      console.error("Error updating user:", err);
+    }
   };
 
   const handleCancel = () => {
@@ -222,8 +280,28 @@ const UserProfilePage = () => {
   const stats = {
     total: reservations.length,
     completed: reservations.filter((r) => r.status === "completed").length,
-    cancelled: reservations.filter((r) => r.status === "cancelled").length,
+    inProgress: reservations.filter((r) => r.status === "in progress").length,
   };
+
+  if (isLoading) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.content}>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.content}>
+          <p style={{ color: "#dc2626" }}>Error: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
@@ -234,6 +312,7 @@ const UserProfilePage = () => {
       <div style={styles.content}>
         <div style={styles.grid}>
           <div style={{ ...styles.card, ...styles.profileSection }}>
+            {/* Profile section remains the same */}
             <div style={styles.cardHeader}>
               <h2 style={styles.cardTitle}>Profile</h2>
             </div>
@@ -241,8 +320,8 @@ const UserProfilePage = () => {
               <div style={styles.avatarSection}>
                 <div style={styles.avatar}>
                   <span style={styles.avatarText}>
-                    {user.prenom[0]}
-                    {user.nom[0]}
+                    {user.prenom?.[0]}
+                    {user.nom?.[0]}
                   </span>
                 </div>
                 {!isEditing ? (
@@ -372,9 +451,11 @@ const UserProfilePage = () => {
                   <p style={styles.statValue}>{stats.completed}</p>
                   <p style={styles.statLabel}>Completed</p>
                 </div>
-                <div style={{ ...styles.statCard, backgroundColor: "#dc2626" }}>
-                  <p style={styles.statValue}>{stats.cancelled}</p>
-                  <p style={styles.statLabel}>Cancelled</p>
+                <div style={{ ...styles.statCard, backgroundColor: "#f59e0b" }}>
+                  {" "}
+                  {/* Changed color to amber for in-progress */}
+                  <p style={styles.statValue}>{stats.inProgress}</p>
+                  <p style={styles.statLabel}>In Progress</p>
                 </div>
               </div>
 
@@ -433,11 +514,11 @@ const UserProfilePage = () => {
                               backgroundColor:
                                 reservation.status === "completed"
                                   ? "rgba(5, 150, 105, 0.2)"
-                                  : "rgba(220, 38, 38, 0.2)",
+                                  : "rgba(245, 158, 11, 0.2)",
                               color:
                                 reservation.status === "completed"
                                   ? "#059669"
-                                  : "#dc2626",
+                                  : "#f59e0b",
                             }}
                           >
                             {reservation.status}

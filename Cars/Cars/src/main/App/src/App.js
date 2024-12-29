@@ -40,7 +40,7 @@ function App() {
         <Route path="/car1/:id" element={<CarDetails />} />
         <Route path="/CarsPage" element={<CarsPage />} />
         <Route path="/myprofile" element={<MyProfilePage />} />
-        <Route path="/contracts" element={<ContractPage />} />
+        
 
         {/* Protected Routes for Admin */}
         <Route
@@ -51,14 +51,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-        {/*<Route
-          path="/contrcat"
+        <Route
+          path="/contrcats"
           element={
             <ProtectedRoute requiredRole="ADMINISTRATOR">
               <ContractPage />
             </ProtectedRoute>
           }
-        />*/}
+        />
         <Route
           path="/PaymentPage"
           element={
