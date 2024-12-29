@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/reservations")
@@ -37,6 +39,21 @@ public class ReservationController {
     public ResponseEntity<Reservation> getReservationById(@PathVariable Long id) {
         Reservation reservation = reservationService.getReservationById(id);
         return ResponseEntity.ok(reservation);
+    }
+
+    @GetMapping("/car-schedule/{voitureId}")
+    public ResponseEntity<List<Map<String, Object>>> getCarSchedule(@PathVariable Long voitureId) {
+        List<Map<String, Object>> schedule = reservationService.getCarAvailabilitySchedule(voitureId);
+        return ResponseEntity.ok(schedule);
+    }
+
+    @GetMapping("/check-availability/{voitureId}")
+    public ResponseEntity<Boolean> checkCarAvailability(
+            @PathVariable Long voitureId,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate) {
+        boolean isAvailable = reservationService.isCarAvailableForPeriod(voitureId, startDate, endDate);
+        return ResponseEntity.ok(isAvailable);
     }
 
     @GetMapping("/byUtilisateur/{utilisateurId}")

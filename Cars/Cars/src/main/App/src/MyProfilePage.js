@@ -164,6 +164,7 @@ const UserProfilePage = () => {
       numTelephone: storedUser.numTelephone || "",
       role: storedUser.role || "",
       id: storedUser.id,
+      password : storedUser.password,
     };
   });
 

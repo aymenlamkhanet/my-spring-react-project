@@ -14,61 +14,68 @@ const Register = ({ SetForgotpasswd, SetSign, Sign }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  try {
-    if (Sign) {
-      console.log(email, password);
-      const response = await axios.post(
-        "http://localhost:8080/utilisateur/login",
-        { email, password }
-      );
-      const { id, message } = response.data;
-      if (id) {
-        const userResponse = await axios.get(
-          `http://localhost:8080/utilisateur/get/${id}`
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (Sign) {
+        console.log(email, password);
+        const response = await axios.post(
+          "http://localhost:8080/utilisateur/login",
+          { email, password }
         );
-        const user = userResponse.data;
-        localStorage.setItem("user", JSON.stringify(user));
-        navigate("/carpage");
+        const { id, message } = response.data;
+        if (id) {
+          const userResponse = await axios.get(
+            `http://localhost:8080/utilisateur/get/${id}`
+          );
+          const user = userResponse.data;
+          localStorage.setItem("user", JSON.stringify(user));
+          navigate("/carpage");
+        } else {
+          alert(message || "Login failed. Please try again.");
+        }
       } else {
-        alert(message || "Login failed. Please try again.");
+        if (password !== confirmPassword) {
+          alert("Passwords do not match. Please try again.");
+          return;
+        }
+
+        const response = await axios.post(
+          "http://localhost:8080/utilisateur/add",
+          {
+            nom: name,
+            prenom,
+            adresse,
+            numTelephone: tele,
+            email,
+            password,
+          }
+        );
+
+        const userData = response.data;
+
+        // Test different response fields
+        if (userData && userData.id) {
+          alert("Account created successfully. Redirecting to login.");
+          navigate("/login");
+        } else if (response.data && response.data.message) {
+          alert(response.data.message);
+        } else {
+          alert("Signup failed. Response format unexpected.");
+        }
       }
-    } else {
-      const response = await axios.post("/api/signup", {
-        email,
-        password,
-        name,
-        prenom,
-        adresse,
-        tele,
-        confirmPassword,
-      });
+    } catch (error) {
+      console.error("Error during authentication:", error);
 
-      const { success, message } = response.data;
-
-      if (success) {
-        alert("Account created successfully. Please log in.");
-        handleSignInClick();
+      if (error.response && error.response.data) {
+        alert(
+          error.response.data.message || "An error occurred. Please try again."
+        );
       } else {
-        alert(message || "Signup failed. Please try again.");
+        alert("An error occurred. Please check your connection and try again.");
       }
     }
-  } catch (error) {
-    console.error("Error during authentication:", error);
-
-    if (error.response && error.response.data) {
-      alert(
-        error.response.data.message || "An error occurred. Please try again."
-      );
-    } else {
-      alert("An error occurred. Please check your connection and try again.");
-    }
-  }
-};
-
-  
+  };
 
   const handleForgotPassword = () => {
     clearFields();
@@ -112,7 +119,6 @@ const handleSubmit = async (e) => {
           />
         </div>
 
-        
         {Sign ? (
           // Sign In View
           <>

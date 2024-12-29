@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Calendar } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Navbar from "./Navbar";
 const items = ["Home", "About", "Contact"];
 
 const ReservationPage = () => {
-
   const navigate = useNavigate();
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const carDetails = JSON.parse(localStorage.getItem("carDetails")) || {};
-
+  const [carReservations, setCarReservations] = useState([]);
+  const [isAvailable, setIsAvailable] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const calculateTotalAmount = (startDate, endDate, carDetails) => {
     if (!startDate || !endDate || !carDetails.tarifLocation) return 0;
@@ -37,7 +39,6 @@ const ReservationPage = () => {
     },
   });
 
-
   const [paymentData, setPaymentData] = useState({
     amount: 0,
     paymentMethod: "Credit Card",
@@ -45,6 +46,58 @@ const ReservationPage = () => {
       id: "",
     },
   });
+
+  // Fetch car reservations
+  useEffect(() => {
+    const fetchCarSchedule = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8080/reservations/car-schedule/${carDetails.id}`
+        );
+        if (!response.ok) throw new Error("Failed to fetch car schedule");
+        const data = await response.json();
+        console.log("car-schedule :: ",data);
+        setCarReservations(data);
+      } catch (error) {
+        console.error("Error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (carDetails.id) {
+      fetchCarSchedule();
+    }
+  }, [carDetails.id]);
+
+  useEffect(() => {
+    const checkAvailability = async () => {
+      if (!startDate || !endDate || !carDetails.id) return;
+
+      try {
+        // Format dates to remove the 'Z' suffix
+        const formattedStartDate = startDate.toISOString().split("Z")[0];
+        const formattedEndDate = endDate.toISOString().split("Z")[0];
+
+        // Construct the URL with the correct path and format
+        const url = `http://localhost:8080/reservations/check-availability/${carDetails.id}?startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error("Failed to check availability");
+        }
+
+        const available = await response.json();
+        setIsAvailable(available);
+      } catch (error) {
+        console.error("Error checking availability:", error);
+        setIsAvailable(false);
+      }
+    };
+
+    checkAvailability();
+  }, [startDate, endDate, carDetails.id]);
 
   useEffect(() => {
     const montantTotal = calculateTotalAmount(startDate, endDate, carDetails);
@@ -62,6 +115,15 @@ const ReservationPage = () => {
     }));
   }, [startDate, endDate, carDetails.tarifLocation]);
 
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("fr-FR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   const [accepted, setAccepted] = useState(false);
 
@@ -79,9 +141,19 @@ const ReservationPage = () => {
       return;
     }
 
+    if (!isAvailable) {
+      alert(
+        "The car is not available for the selected dates. Please choose different dates."
+      );
+      return;
+    }
+
     // Format start and end dates to ISO string format (YYYY-MM-DDTHH:mm:ss)
     const formattedStartDate = startDate ? startDate.toISOString() : "";
     const formattedEndDate = endDate ? endDate.toISOString() : "";
+
+    // Format date for display
+    
 
     // Prepare the reservation data
     const reservationData = {
@@ -110,7 +182,6 @@ const ReservationPage = () => {
       // Get the response with reservation ID
       const reservationResponseData = await reservationResponse.json();
       const reservationId = reservationResponseData.id; // Assuming the response contains the reservation ID
-
 
       const contractData = {
         reservation: {
@@ -182,32 +253,72 @@ const ReservationPage = () => {
     }
   };
 
-
-
   return (
     <>
       <Navbar items={items} />
       <div className="min-h-screen bg-gray-100 flex">
         {/* Left Side: Promotions */}
-        <div className="w-1/4 bg-gradient-to-b from-blue-500 to-blue-700 text-white p-6 flex flex-col justify-center">
-          <h2 className="text-3xl font-bold mb-6">🎉 Loyalty Program</h2>
-          <ul className="space-y-4">
-            <li className="bg-blue-600 p-4 rounded-lg shadow-md">
-              💳 Earn points with every reservation!
-            </li>
-            <li className="bg-blue-600 p-4 rounded-lg shadow-md">
-              🎁 Get exclusive discounts and gifts.
-            </li>
-            <li className="bg-blue-600 p-4 rounded-lg shadow-md">
-              🏆 Priority access to premium fields.
-            </li>
-            <li className="bg-blue-600 p-4 rounded-lg shadow-md">
-              🌟 Refer friends and earn free reservations!
-            </li>
-          </ul>
-          <button className="mt-6 px-4 py-2 bg-yellow-400 text-blue-800 font-bold rounded-lg shadow hover:bg-yellow-500 transition">
-            Learn More
-          </button>
+        <div className="w-1/4 bg-gradient-to-b from-blue-500 to-blue-700 text-white p-6">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold flex items-center mb-4">
+              <Calendar className="mr-2" /> Car Schedule
+            </h2>
+            {isLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-white border-t-transparent"></div>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  {carReservations.length > 0 ? (
+                    carReservations.map((reservation, index) => (
+                      <div
+                        key={index}
+                        className="bg-blue-600/50 rounded-lg p-4"
+                      >
+                        <p className="font-semibold mb-2">
+                          Reservation {index + 1}
+                        </p>
+                        <p className="text-sm">
+                          From: {formatDate(reservation.startDate)}
+                        </p>
+                        <p className="text-sm">
+                          To: {formatDate(reservation.endDate)}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center py-4 bg-blue-600/50 rounded-lg">
+                      No current reservations
+                    </p>
+                  )}
+                </div>
+
+                {/* Availability Status */}
+                {startDate && endDate && (
+                  <div className="mt-6">
+                    <h3 className="text-xl font-semibold mb-3">
+                      Selected Period
+                    </h3>
+                    <div
+                      className={`p-4 rounded-lg ${
+                        isAvailable ? "bg-green-500/50" : "bg-red-500/50"
+                      }`}
+                    >
+                      <p className="font-medium">
+                        {isAvailable
+                          ? "✓ Available for selected dates"
+                          : "✗ Not available for selected dates"}
+                      </p>
+                      <p className="text-sm mt-2">
+                        {formatDate(startDate)} - {formatDate(endDate)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         {/* Right Side: Reservation Form */}

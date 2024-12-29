@@ -13,4 +13,9 @@ public interface ReservationRepo extends JpaRepository<Reservation, Long> {
 
     List<Reservation> findByVoitureId(Long voitureId);
 
+    List<Reservation> findByRetourVoitureFalse();
+
+    List<Reservation> findByVoitureIdOrderByDateReservationAsc(Long voitureId);
+
 }
+ 
